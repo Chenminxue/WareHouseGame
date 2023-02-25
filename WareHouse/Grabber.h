@@ -22,6 +22,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ActivateObject();
 
+	// Get PhysicsHandle
+	class UPhysicsHandleComponent* GetPhysicsHandle() const;
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -29,11 +32,15 @@ protected:
 private:
 	// Grab Distance
 	UPROPERTY(EditAnywhere)
-	float MaxGrabDistance = 400;
+	float MaxGrabDistance = 100.f;
 
 	// Grab Radius
 	UPROPERTY(EditAnywhere)
-	float GrabRadius = 100.f;
+	float GrabRadius = 40.f;
+
+	// Hold Distance
+	UPROPERTY(EditAnywhere)
+	float HoldDistance = 200.f;
 
 public:	
 	// Called every frame
