@@ -20,6 +20,10 @@ public:
 	UPROPERTY(EditAnywhere)
 	FVector MoveOffset = FVector();
 
+	// How far should drawer rotate
+	UPROPERTY(EditAnywhere)
+	FRotator RotateOffset = FRotator(0.f, 90.f, 0.f);
+
 	// How long should drawer move
 	UPROPERTY(EditAnywhere)
 	float MoveTime = 2.f;
@@ -30,4 +34,7 @@ public:
 
 	// Starting position of the Wardrobe
 	FVector OriginalLocation;
+
+	// Starting rotation of the Wardrobe
+	FRotator OriginalRotation;
 };

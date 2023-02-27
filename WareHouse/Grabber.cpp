@@ -6,6 +6,7 @@
 #include "Engine/World.h"
 #include "MoveableObjects.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "Wardrobe_1.h"
 
 
 // Sets default values for this component's properties
@@ -36,6 +37,24 @@ UPhysicsHandleComponent* UGrabber::GetPhysicsHandle() const
 	return Result;
 }
 
+bool UGrabber::GetGrabbableInReach(FHitResult &OutHitResult) const
+{
+	// Start and end position for sweeping
+	FVector Start = GetComponentLocation();
+	FVector End = Start + GetForwardVector() * MaxGrabDistance;
+	// DrawDebugLine(GetWorld(), Start, End, FColor::Red);
+
+	FCollisionShape Sphere = FCollisionShape::MakeSphere(GrabRadius);
+
+	bool HasHit = GetWorld()->SweepSingleByChannel(
+		OutHitResult, 
+		Start, 
+		End, 
+		FQuat::Identity, 
+		ECC_GameTraceChannel2,
+		Sphere);
+    return HasHit;
+}
 
 void UGrabber::ActivateObject()
 {
@@ -44,36 +63,48 @@ void UGrabber::ActivateObject()
 		return;
 	}
 
-	// Start and end position for sweeping
-	FVector Start = GetComponentLocation();
-	FVector End = Start + GetForwardVector() * MaxGrabDistance;
-	// DrawDebugLine(GetWorld(), Start, End, FColor::Red);
-
-	FCollisionShape Sphere = FCollisionShape::MakeSphere(GrabRadius);
 	FHitResult HitResult;
-	bool HasHit = GetWorld()->SweepSingleByChannel(
-		HitResult, 
-		Start, 
-		End, 
-		FQuat::Identity, 
-		ECC_GameTraceChannel2,
-		Sphere);
+	bool HasHit = GetGrabbableInReach(HitResult);
 
-		if(HasHit){
-			PhysicsHandle->GrabComponentAtLocationWithRotation(
-				HitResult.GetComponent(),
-				NAME_None,
-				HitResult.ImpactPoint,
-				GetComponentRotation()
-			);
-			AActor* HitActor = HitResult.GetActor();
-			Cast<AMoveableObjects>(HitActor)->ShouldMove = true;
-			UE_LOG(LogTemp, Warning, TEXT("Hit actor: %s"), *HitActor->GetActorNameOrLabel());
+	if(HasHit){
+		UPrimitiveComponent* HitComponent = HitResult.GetComponent();
+
+		AActor* HitActor = HitResult.GetActor();
+
+		// Which object you want to grab
+		if(HitActor->GetActorNameOrLabel() == "BP_Statue"){
+			HitComponent->SetSimulatePhysics(true);
+			HitComponent->WakeAllRigidBodies();
 		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("No actor!"));
-		}
+
+		HitActor->Tags.Add("Grabbed");
+		HitActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+		PhysicsHandle->GrabComponentAtLocationWithRotation(
+			HitComponent,
+			NAME_None,
+			HitResult.ImpactPoint,
+			GetComponentRotation()
+		);
+		
+		Cast<AMoveableObjects>(HitActor)->ShouldMove = true;
+		UE_LOG(LogTemp, Warning, TEXT("Hit actor: %s"), *HitActor->GetActorNameOrLabel());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No actor!"));
+	}
+}
+
+void UGrabber::Release()
+{
+	UPhysicsHandleComponent *PhysicsHandle = GetPhysicsHandle();
+
+	if(PhysicsHandle && PhysicsHandle->GetGrabbedComponent() != nullptr){
+		AActor* GrabbedActor = PhysicsHandle->GetGrabbedComponent()->GetOwner();
+		GrabbedActor->Tags.Remove("Grabbed");
+		PhysicsHandle->ReleaseComponent();
+	}
 }
 
 // Called every frame
@@ -86,6 +117,8 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 		return;
 	}
 
-	FVector TargetLocation = GetComponentLocation() + GetForwardVector() * HoldDistance;
-	PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, GetComponentRotation());
+	if(PhysicsHandle->GetGrabbedComponent() != nullptr){
+		FVector TargetLocation = GetComponentLocation() + GetForwardVector() * HoldDistance;
+		PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, GetComponentRotation());
+	}
 }

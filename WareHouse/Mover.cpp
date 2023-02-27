@@ -13,5 +13,14 @@ void Move(UStaticMeshComponent *USMComp, FVector MoveOffset, float MoveTime, boo
 		// Move to the new location 
 		FVector NewLocation = FMath::VInterpConstantTo(CurrentLocation, TargetLocation, DeltaTime, Speed);
 		USMComp->SetWorldLocation(NewLocation);
+		//TargetLocation = OriginalLocation + MoveOffset;
+	}
+	else{
+		FVector TargetLocation = OriginalLocation;
+
+		FVector CurrentLocation = USMComp->GetComponentLocation();
+		float Speed = MoveOffset.Length() / MoveTime;
+		FVector NewLocation = FMath::VInterpConstantTo(CurrentLocation, TargetLocation, DeltaTime, Speed);
+		USMComp->SetWorldLocation(NewLocation);
 	}
 }

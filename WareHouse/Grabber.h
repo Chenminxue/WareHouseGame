@@ -22,8 +22,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ActivateObject();
 
+	// Release the object
+	UFUNCTION(BlueprintCallable)
+	void Release();
+
 	// Get PhysicsHandle
 	class UPhysicsHandleComponent* GetPhysicsHandle() const;
+
+	// Check whether a object been grabbed or not 
+	bool GetGrabbableInReach(FHitResult & OutHitResult) const;
 
 protected:
 	// Called when the game starts
@@ -32,7 +39,7 @@ protected:
 private:
 	// Grab Distance
 	UPROPERTY(EditAnywhere)
-	float MaxGrabDistance = 100.f;
+	float MaxGrabDistance = 200.f;
 
 	// Grab Radius
 	UPROPERTY(EditAnywhere)
