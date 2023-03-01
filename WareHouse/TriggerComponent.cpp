@@ -56,8 +56,13 @@ void UTriggerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
         Actor->SetActorRotation(NewRotation);
 
         AActor * TempActor = GetOwner();
-        // UE_LOG(LogTemp, Display, TEXT("Actor: %s"), *TempActor->GetName());
+        UE_LOG(LogTemp, Display, TEXT("Actor: %s"), *TempActor->GetName());
         Cast<AMoveableObjects>(TempActor)->ShouldMove = true;
+
+        if(TempActor->GetActorNameOrLabel() == "BP_Wardrobe_3")
+        {
+            IsWardrobeTriggered = true;
+        }
         // UE_LOG(LogTemp, Display, TEXT("Unlocking"));
     }
     else
@@ -65,6 +70,7 @@ void UTriggerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
         AActor * TempActor = GetOwner();
         // UE_LOG(LogTemp, Display, TEXT("Actor: %s"), *TempActor->GetName());
         Cast<AMoveableObjects>(TempActor)->ShouldMove = false;
+        IsWardrobeTriggered = false;
         // UE_LOG(LogTemp, Display, TEXT("Relocking"));
     }
 

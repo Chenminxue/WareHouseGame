@@ -3,6 +3,7 @@
 #include "WareHouseGameMode.h"
 #include "WareHouseCharacter.h"
 #include "UObject/ConstructorHelpers.h"
+#include "TimerManager.h"
 
 AWareHouseGameMode::AWareHouseGameMode()
 	: Super()

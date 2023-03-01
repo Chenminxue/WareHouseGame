@@ -32,8 +32,14 @@ private:
 	class AWardrobe_1* Wardrobe_1;
 
 
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	
+	static bool IsWardrobeTriggered;
+
 };
+
+bool UTriggerComponent::IsWardrobeTriggered = false;

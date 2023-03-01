@@ -7,6 +7,8 @@
 #include "MoveableObjects.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Wardrobe_1.h"
+#include "GameFramework/PlayerController.h"
+#include "TriggerComponent.h"
 
 
 // Sets default values for this component's properties
@@ -72,23 +74,32 @@ void UGrabber::ActivateObject()
 		AActor* HitActor = HitResult.GetActor();
 
 		// Which object you want to grab
-		if(HitActor->GetActorNameOrLabel() == "BP_Statue"){
+		if(HitActor->GetActorNameOrLabel() == "BP_Statue")
+		{
 			HitComponent->SetSimulatePhysics(true);
 			HitComponent->WakeAllRigidBodies();
+
+			HitActor->Tags.Add("Grabbed");
+			HitActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+			PhysicsHandle->GrabComponentAtLocationWithRotation(
+				HitComponent,
+				NAME_None,
+				HitResult.ImpactPoint,
+				GetComponentRotation()
+			);
 		}
-
-		HitActor->Tags.Add("Grabbed");
-		HitActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-
-		PhysicsHandle->GrabComponentAtLocationWithRotation(
-			HitComponent,
-			NAME_None,
-			HitResult.ImpactPoint,
-			GetComponentRotation()
-		);
-		
-		Cast<AMoveableObjects>(HitActor)->ShouldMove = true;
-		UE_LOG(LogTemp, Warning, TEXT("Hit actor: %s"), *HitActor->GetActorNameOrLabel());
+		// End of the game
+		else if(HitActor->GetActorNameOrLabel() == "BP_FrontDoor" && UTriggerComponent::IsWardrobeTriggered == true)
+		{
+			APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+    		PlayerController->ConsoleCommand("quit");
+		}
+		else
+		{
+			Cast<AMoveableObjects>(HitActor)->ShouldMove = true;
+			UE_LOG(LogTemp, Warning, TEXT("Hit actor: %s"), *HitActor->GetActorNameOrLabel());
+		}
 	}
 	else
 	{
